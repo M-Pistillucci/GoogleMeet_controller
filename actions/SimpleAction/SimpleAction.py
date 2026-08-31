@@ -1,28 +1,22 @@
-# Import StreamController modules
-from src.backend.PluginManager.ActionBase import ActionBase
-from src.backend.DeckManagement.DeckController import DeckController
-from src.backend.PageManagement.Page import Page
-from src.backend.PluginManager.PluginBase import PluginBase
+from src.backend.PluginManager.ActionCore import ActionCore
+from src.backend.PluginManager.EventAssigner import EventAssigner
+from src.backend.DeckManagement.InputIdentifier import Input
 
-# Import python modules
-import os
 
-# Import gtk modules - used for the config rows
-import gi
-gi.require_version("Gtk", "4.0")
-gi.require_version("Adw", "1")
-from gi.repository import Gtk, Adw
-
-class SimpleAction(ActionBase):
+class SimpleAction(ActionCore):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
+
+        # (we'll look at this in the next step)
+        self.add_event_assigner(EventAssigner(
+            id="simple_action_pressed",
+            ui_label="Pressed",
+            default_events=[Input.Key.Events.DOWN, Input.Dial.Events.DOWN],
+            callback=self.on_pressed
+        ))
+
     def on_ready(self) -> None:
-        icon_path = os.path.join(self.plugin_base.PATH, "assets", "info.png")
-        self.set_media(media_path=icon_path, size=0.75)
-        
-    def on_key_down(self) -> None:
-        print("Key down")
-    
-    def on_key_up(self) -> None:
-        print("Key up")
+        self.set_media(media_path=self.get_asset_path("info.png"), size=0.75)
+
+    def on_pressed(self, data) -> None:
+        print("Pressed")
