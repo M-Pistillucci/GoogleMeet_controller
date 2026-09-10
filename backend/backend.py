@@ -15,23 +15,16 @@ class Backend(BackendBase):
 
     def __init__(self):
         self.controller: Optional[GoogleMeetController] = None
+        try:
+            host = "127.0.0.1"
+            port = 8765
+            self.controller = GoogleMeetController(host=host, port=port)
+            self.controller.start()
+            LOG.info("Google Meet WebSocket Server avviato con successo")
+        except:
+            LOG.error(f"Errore nell'avvio del controller Google Meet: {e}")
+
         super().__init__()
-
-    def _start_server(self):
-        """Inizializza sia il server RPyC di sistema che il WebSocket di Google Meet."""
-        # 1. Chiama l'implementazione della classe base per creare self.server (RPyC)
-        super()._start_server()
-
-        # 2. Avvia il server WebSocket per l'estensione del browser
-        if self.controller is None:
-            try:
-                host = "127.0.0.1"
-                port = 8765
-                self.controller = GoogleMeetController(host=host, port=port)
-                self.controller.start()
-                LOG.info("Google Meet WebSocket Server avviato con successo")
-            except Exception as e:
-                LOG.error(f"Errore nell'avvio del controller Google Meet: {e}")
 
     def get_connected(self) -> bool:
         return self.controller.is_connected() if self.controller else False

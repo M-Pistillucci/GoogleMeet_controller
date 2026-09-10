@@ -1,6 +1,8 @@
 import os
 import sys
 import logging
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.ERROR)

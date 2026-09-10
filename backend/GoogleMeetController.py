@@ -19,7 +19,9 @@ class GoogleMeetController:
         self.host = host
         self.port = port
         self.server = None
+        self._stop_event = asyncio.Event()
         self.loop: Optional[asyncio.AbstractEventLoop] = None
+        self._thread = None
         self.connected = False
 
         # # Authentication managers
@@ -232,19 +234,26 @@ class GoogleMeetController:
             log.error(f"Server error: {e}")
 
     def start(self):
-        if self.loop and self.loop.is_running():
-            log.warning("Server already running")
-            return
+        self._thread = threading.Thread(target=self._run_async_loop, daemon=True)
+        self._thread.start()
+        # if self.loop and self.loop.is_running():
+        #     log.warning("Server already running")
+        #     return
+        #
+    def _run_async_loop(self):
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+        self.loop.run_until_complete(self._run_server())
 
-        def run_loop():
-            self.loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(self.loop)
-            self._stop_event = asyncio.Event()
-            self.loop.run_until_complete(self._run_server())
+        # def run_loop():
+        #     self.loop = asyncio.new_event_loop()
+        #     asyncio.set_event_loop(self.loop)
+        #     self._stop_event = asyncio.Event()
+        #     self.loop.run_until_complete(self._run_server())
 
-        thread = threading.Thread(target=run_loop, daemon=True, name="google_meet_ws_server")
-        thread.start()
-        log.info("WebSocket server thread started")
+        # thread = threading.Thread(target=run_loop, daemon=True, name="google_meet_ws_server")
+        # thread.start()
+        # log.info("WebSocket server thread started")
 
     def stop(self):
         if self.loop and self.loop.is_running():
@@ -277,8 +286,8 @@ class GoogleMeetController:
         if self.loop:
             asyncio.run_coroutine_threadsafe(self.send_command("leave_call"), self.loop)
 
-    def get_pending_pairing_requests(self) -> list[PairingRequest]:
-        return self.auth_manager.get_pending_requests()
+    def get_pending_pairing_requests(self) -> list[Dict[str, str]]:
+        return self.auth_manager.get_pending_pairing_requests()
 
-    def get_authorized_instances(self) -> list[PairingRequest]:
+    def get_authorized_instances(self) -> list[Dict[str, str]]:
         return self.auth_manager.get_authorized_instances()
