@@ -1,25 +1,32 @@
-// Legge lo stato e lo manda a background.js
+import { getMicrophoneState, toggleMicrophone } from './src/google-meet/microphone.js';
+import { getCameraState, toggleCamera } from './src/google-meet/camera.js';
+import { getMeetingDetails } from './src/google-meet/meeting-info.js';
+import { isSharingScreen, toggleScreenShare } from './src/google-meet/screen-share.js';
+
+function collectFullState() {
+  const meetingDetails = getMeetingDetails();
+
+  return {
+    ...meetingDetails,
+    mic_enabled: meetingDetails.in_meeting ? getMicrophoneState() : false,
+    camera_enabled: meetingDetails.in_meeting ? getCameraState() : false,
+    hand_raised: false, // da collegare a hand.js
+    screen_sharing: meetingDetails.in_meeting ? isSharingScreen() : false
+  };
+}
+
+// Invia periodicamente lo stato aggiornato a background.js
 setInterval(() => {
-  const micButton = document.querySelector('[data-is-muted]');
-  if (micButton) {
-    const isMuted = micButton.getAttribute('data-is-muted') === 'true';
-    chrome.runtime.sendMessage({
-      type: "state",
-      data: {
-        in_meeting: true,
-        mic_enabled: !isMuted
-      }
-    });
-  }
+  chrome.runtime.sendMessage({
+    type: 'state',
+    data: collectFullState()
+  });
 }, 1000);
 
-// Riceve comandi da background.js ed esegue le scorciatoie
-chrome.runtime.onMessage.addListener((message) => {
-  if (message.action === "toggle_mic") {
-    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-    const eventParams = { key: 'd', code: 'KeyD', keyCode: 68, bubbles: true, cancelable: true };
-    if (isMac) eventParams.metaKey = true; else eventParams.ctrlKey = true;
-
-    document.dispatchEvent(new KeyboardEvent('keydown', eventParams));
-  }
+// Ascolta i comandi provenienti da background.js / WebSocket
+chrome.runtime.onMessage.addListener((msg) => {
+  console.log("[Content] Comando ricevuto:", msg);
+  if (msg.action === 'toggle_mic') toggleMicrophone();
+  if (msg.action === 'toggle_camera') toggleCamera();
+  if (msg.action === 'toggle_screen_share') toggleScreenShare();
 });

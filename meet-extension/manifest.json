@@ -8,16 +8,23 @@
     "*://meet.google.com/*"
   ],
   "background": {
+    "scripts": ["background.js"],
     "service_worker": "background.js",
-    "scripts": ["background.js"]
+    "type": "module"
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' ws://127.0.0.1:* ws://localhost:*;"
   },
+  "web_accessible_resources": [
+    {
+      "resources": ["content.js", "src/*", "src/google-meet/*", "src/google-meet/core/*"],
+      "matches": ["*://meet.google.com/*"]
+    }
+  ],
   "content_scripts": [
     {
       "matches": ["*://meet.google.com/*"],
-      "js": ["content.js"]
+      "js": ["content_loader.js"]
     }
   ]
 }

@@ -21,7 +21,7 @@ class Backend(BackendBase):
             self.controller = GoogleMeetController(host=host, port=port)
             self.controller.start()
             LOG.info("Google Meet WebSocket Server avviato con successo")
-        except:
+        except Exception as e:
             LOG.error(f"Errore nell'avvio del controller Google Meet: {e}")
 
         super().__init__()
@@ -36,6 +36,13 @@ class Backend(BackendBase):
             LOG.error(f"Errore recupero stato: {e}")
             return None
 
+    def get_in_meeting(self) -> bool:
+        try:
+            return self.controller.is_in_meeting() if self.controller else False
+        except Exception as e:
+            LOG.error(f"Errore recupero stato: {e}")
+            return False
+
     def get_mic_enabled(self) -> Optional[bool]:
         state = self.get_state()
         return state.get("mic_enabled", False) if state else None
@@ -48,9 +55,6 @@ class Backend(BackendBase):
         state = self.get_state()
         return state.get("hand_raised", False) if state else None
 
-    def get_in_meeting(self) -> Optional[bool]:
-        state = self.get_state()
-        return state.get("in_meeting", False) if state else None
 
     def get_participant_count(self) -> Optional[int]:
         state = self.get_state()
@@ -81,6 +85,19 @@ class Backend(BackendBase):
                 return True
         except Exception as e:
             LOG.error(f"Errore toggle mano: {e}")
+        return False
+
+    def get_screen_sharing(self) -> Optional[bool]:
+        state = self.get_state()
+        return state.get("screen_sharing", False) if state else None
+
+    def toggle_screen_share(self) -> bool:
+        try:
+            if self.controller:
+                self.controller.toggle_screen_share()
+                return True
+        except Exception as e:
+            LOG.error(f"Errore toggle screen share: {e}")
         return False
 
     def send_reaction(self, reaction: str) -> bool:

@@ -25,9 +25,11 @@ async function connect() {
 
   socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
+    console.log("[Background] Messaggio ricevuto dal backend:", data);
     if (data.type === "handshake_success" || data.type === "heartbeat_ack") return;
 
     chrome.tabs.query({ url: "*://meet.google.com/*" }, (tabs) => {
+      console.log("[Background] Inoltro a", tabs.length, "tab Meet");
       tabs.forEach(tab => chrome.tabs.sendMessage(tab.id, data));
     });
   };

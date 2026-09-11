@@ -1,10 +1,8 @@
 import logging
-from typing import Dict, Any
-
+from PIL import Image
 from src.backend.PluginManager.ActionCore import ActionCore
 
 LOG = logging.getLogger(__name__)
-
 
 class InMeetingStatus(ActionCore):
     """
@@ -12,10 +10,7 @@ class InMeetingStatus(ActionCore):
     """
 
     def __init__(self, *args, **kwargs):
-        # Accetta tutti i parametri posizionali e a parola chiave (incluso 'action_name')
-        # e li passa alla classe base ActionBase
         super().__init__(*args, **kwargs)
-
         self.backend = self.plugin_base.backend
         self.in_meeting = False
 
@@ -23,20 +18,24 @@ class InMeetingStatus(ActionCore):
         """Called when the action is initialized and ready to register listeners."""
         self.update_status()
 
+    def _generate_background(self, color: tuple) -> Image.Image:
+        """Crea un'immagine a tinta unita della dimensione richiesta dal deck."""
+        # Recupera le dimensioni in pixel del tasto sul deck corrente
+        size = self.deck_controller.deck.key_image_format()["size"]
+        return Image.new("RGB", size, color)
+
     def update_status(self):
         """Fetches current meeting status from the backend and updates key rendering."""
         if not self.backend:
             return
 
         in_meeting_state = self.backend.get_in_meeting()
-
-        # Default a False se viene restituito None
         self.in_meeting = bool(in_meeting_state)
 
-        # Aggiorna lo stato visivo/icona su StreamController
-        self.set_state(1 if self.in_meeting else 0)
+        icon_file = "Red_circle.gif" if self.in_meeting else "phone_disabled.png"
+        self.set_media(media_path=self.get_asset_path(icon_file), size = 0.75)
 
-        # Etichetta di testo sul tasto
+        # Imposta testo ed etichetta
         status_text = "In Call" if self.in_meeting else "No Call"
         self.set_bottom_label(status_text)
 

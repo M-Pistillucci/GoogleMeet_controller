@@ -18,6 +18,11 @@ from src.backend.PluginManager.ActionInputSupport import ActionInputSupport
 
 # Import dell'azione specifica per lo stato e di ImageManager
 from actions.InMeetingStatus import InMeetingStatus
+from actions.MicrophoneToggle import MicrophoneToggle
+from actions.CameraToggle import CameraToggle
+from actions.ScreenShareToggle import ScreenShareToggle
+from actions.ActivateMicCamera import ActivateMicCamera
+from actions.DeactivateMicCamera import DeactivateMicCamera
 #from actions.ImageManager import ImageManager
 
 
@@ -43,7 +48,7 @@ class GoogleMeetPlugin(PluginBase):
         print("backend launched")
         log.info("Backend Google Meet avviato")
 
-        # 3. Registra l'unica azione: Controllo Connessione / Stato Meeting
+        # 3. Registra l' azione: Controllo Connessione / Stato Meeting
         in_meeting_status_holder = ActionHolder(
             plugin_base=self,
             action_base=InMeetingStatus,
@@ -56,6 +61,71 @@ class GoogleMeetPlugin(PluginBase):
             },
         )
         self.add_action_holder(in_meeting_status_holder)
+
+        mic_toggle_holder = ActionHolder(
+            plugin_base=self,
+            action_base=MicrophoneToggle,
+            action_id_suffix="MicrophoneToggle",
+            action_name="Toggle Microphone",
+            action_support={
+                Input.Key: ActionInputSupport.SUPPORTED,
+                Input.Dial: ActionInputSupport.SUPPORTED,
+                Input.Touchscreen: ActionInputSupport.SUPPORTED,
+            },
+        )
+        self.add_action_holder(mic_toggle_holder)
+
+        camera_toggle_holder = ActionHolder(
+            plugin_base=self,
+            action_base=CameraToggle,
+            action_id_suffix="CameraToggle",
+            action_name="Toggle Camera",
+            action_support={
+                Input.Key: ActionInputSupport.SUPPORTED,
+                Input.Dial: ActionInputSupport.SUPPORTED,
+                Input.Touchscreen: ActionInputSupport.SUPPORTED,
+            },
+        )
+        self.add_action_holder(camera_toggle_holder)
+
+        screen_share_toggle_holder = ActionHolder(
+            plugin_base=self,
+            action_base=ScreenShareToggle,
+            action_id_suffix="ScreenShareToggle",
+            action_name="Toggle Screen Share",
+            action_support={
+                Input.Key: ActionInputSupport.SUPPORTED,
+                Input.Dial: ActionInputSupport.SUPPORTED,
+                Input.Touchscreen: ActionInputSupport.SUPPORTED,
+            },
+        )
+        self.add_action_holder(screen_share_toggle_holder)
+
+        activate_mic_camera_holder = ActionHolder(
+            plugin_base=self,
+            action_base=ActivateMicCamera,
+            action_id_suffix="ActivateMicCamera",
+            action_name="Activate MicCamera",
+            action_support={
+                Input.Key: ActionInputSupport.SUPPORTED,
+                Input.Dial: ActionInputSupport.SUPPORTED,
+                Input.Touchscreen: ActionInputSupport.SUPPORTED,
+            },
+        )
+        self.add_action_holder(activate_mic_camera_holder)
+
+        deactivate_mic_camera_holder = ActionHolder(
+            plugin_base=self,
+            action_base=DeactivateMicCamera,
+            action_id_suffix="DeactivateMicCamera",
+            action_name="Deactivate MicCamera",
+            action_support={
+                Input.Key: ActionInputSupport.SUPPORTED,
+                Input.Dial: ActionInputSupport.SUPPORTED,
+                Input.Touchscreen: ActionInputSupport.SUPPORTED,
+            },
+        )
+        self.add_action_holder(deactivate_mic_camera_holder)
 
         # 4. Registra il plugin nel sistema
         self.register(

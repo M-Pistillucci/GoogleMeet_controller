@@ -38,6 +38,7 @@ class GoogleMeetController:
         self.current_state = {
             "mic_enabled": False,
             "camera_enabled": False,
+            "screen_sharing": False,
             "hand_raised": False,
             "in_meeting": False,
             "meeting_id": None,
@@ -176,6 +177,11 @@ class GoogleMeetController:
             if key in state_data:
                 self.current_state[key] = state_data[key]
 
+        if not self.current_state.get("in_meeting", False):
+            self.current_state["meeting_id"] = None
+            self.current_state["meeting_name"] = None
+            self.current_state["participant_count"] = 0
+
         self._notify_state_update()
         log.debug(f"State updated: {self.current_state}")
 
@@ -198,6 +204,7 @@ class GoogleMeetController:
                 self.current_state = {
                     "mic_enabled": False,
                     "camera_enabled": False,
+                    "screen_sharing": False,
                     "hand_raised": False,
                     "in_meeting": False,
                     "meeting_id": None,
@@ -266,6 +273,9 @@ class GoogleMeetController:
     def is_connected(self) -> bool:
         return self.connected
 
+    def is_in_meeting(self) -> bool:
+        return self.current_state.get("in_meeting", False)
+
     def toggle_microphone(self):
         if self.loop:
             asyncio.run_coroutine_threadsafe(self.send_command("toggle_mic"), self.loop)
@@ -281,6 +291,10 @@ class GoogleMeetController:
     def send_reaction(self, reaction: str):
         if self.loop:
             asyncio.run_coroutine_threadsafe(self.send_command("send_reaction", {"reaction": reaction}), self.loop)
+
+    def toggle_screen_share(self):
+        if self.loop:
+            asyncio.run_coroutine_threadsafe(self.send_command("toggle_screen_share"), self.loop)
 
     def leave_call(self):
         if self.loop:
